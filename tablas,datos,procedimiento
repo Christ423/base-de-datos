@@ -1,0 +1,191 @@
+create database rover;
+use rover;
+
+CREATE TABLE generos (
+id int auto_increment primary key, 
+nombre varchar(500)
+);
+
+CREATE TABLE clima(
+id int auto_increment primary key, 
+nombre varchar(500), 
+temporada_inicio date, 
+temporada_final date, 
+descripcion mediumtext
+);
+
+CREATE TABLE estructura (
+id int auto_increment primary key, 
+nombre varchar(500), 
+peso float, 
+descripcion mediumtext
+);
+
+CREATE TABLE cultivo (
+id int auto_increment primary key, 
+nombre varchar(500)
+);
+
+CREATE TABLE ocupacion (
+id int auto_increment primary key, 
+nombre varchar(500)
+);
+
+CREATE TABLE ruedas  (
+id int auto_increment primary key, 
+nombre varchar(500), 
+tamaño int, 
+peso float
+);
+
+CREATE TABLE rover  (
+id int auto_increment primary key, 
+id_estructura int, 
+id_ruedas int, 
+peso int, 
+FOREIGN KEY (id_estructura) REFERENCES estructura(id), 
+FOREIGN KEY (id_ruedas) REFERENCES ruedas(id)
+);
+
+CREATE TABLE usuario (
+id int auto_increment primary key, 
+nombre varchar(500), 
+edad date, 
+id_ocupacion int, 
+id_genero int, 
+correo varchar(500), 
+foreign key (id_ocupacion) references ocupacion(id), 
+foreign key (id_genero) references generos (id)  
+);
+
+CREATE TABLE caracteristicas_fisicas (
+id int auto_increment primary key, 
+nombre varchar(500), descripcion mediumtext
+);
+
+CREATE TABLE caracteristicas_quimicas (
+id int auto_increment primary key, 
+nombre varchar(500), descripcion mediumtext
+);
+
+CREATE TABLE tipo_terreno (
+id int auto_increment primary key, 
+nombre varchar(500), 
+id_caracteristicas_quimicas int, 
+id_caracteristicas_fisicas int, 
+fertilidad varchar(500), 
+descripcion mediumtext, 
+foreign key (id_caracteristicas_quimicas) references caracteristicas_quimicas(id), 
+foreign key (id_caracteristicas_fisicas) references caracteristicas_fisicas(id) 
+);
+
+
+CREATE TABLE terreno (
+id int auto_increment primary key, 
+id_tipo_terreno int, 
+id_cultivo int , 
+id_clima int,  
+FOREIGN KEY (id_tipo_terreno) REFERENCES tipo_terreno(id),  
+FOREIGN KEY (id_cultivo) REFERENCES cultivo(id), 
+FOREIGN KEY (id_clima) REFERENCES clima(id)
+);
+
+CREATE TABLE simulacion (
+id int auto_increment primary key, 
+id_usuario int, 
+id_rover int, 
+id_terreno int, 
+fecha_creacion date, 
+tiempo_en_segundos float,
+punto_inicio_x float, 
+punto_final_x float, 
+punto_inicio_y float, 
+punto_final_y float, 
+distancia float, 
+FOREIGN KEY (id_usuario) REFERENCES usuario(id),
+FOREIGN KEY (id_rover) REFERENCES rover(id),
+FOREIGN KEY (id_terreno) REFERENCES terreno(id) 
+);
+
+
+START TRANSACTION;
+
+INSERT INTO generos (nombre) VALUES ('Masculino'), ('Femenino');
+
+INSERT INTO clima (nombre, temporada_inicio, temporada_final, descripcion)
+VALUES ('Verano', '2023-06-01', '2023-08-31', 'Clima cálido y soleado'),
+       ('Invierno', '2023-12-01', '2024-02-29', 'Clima frío y nevado');
+
+INSERT INTO estructura (nombre, peso, descripcion)
+VALUES ('Estructura A', 10.5, 'Estructura ligera y resistente'),
+       ('Estructura B', 15.2, 'Estructura robusta y duradera');
+
+INSERT INTO cultivo (nombre) VALUES ('Trigo'), ('Maíz'), ('Arroz');
+
+INSERT INTO ocupacion (nombre) VALUES ('Estudiante'), ('Ingeniero'), ('Agricultor');
+
+INSERT INTO ruedas (nombre, tamaño, peso)
+VALUES ('Ruedas A', 20, 5.2),
+       ('Ruedas B', 18, 4.8);
+
+-- Insertar registros en la tabla rover
+INSERT INTO rover (id_estructura, id_ruedas, peso)
+VALUES (1, 1, 100),
+       (2, 2, 120);
+
+INSERT INTO usuario (nombre, edad, id_ocupacion, id_genero, correo)
+VALUES ('Juan Pérez', '1990-05-15', 2, 1, 'juan@example.com'),
+       ('María López', '1985-10-20', 3, 2, 'maria@example.com');
+
+-- Insertar registros en la tabla caracteristicas_fisicas
+INSERT INTO caracteristicas_fisicas (nombre, descripcion)
+VALUES ('Característica Física A', 'Descripción de la característica física A'),
+       ('Característica Física B', 'Descripción de la característica física B');
+
+INSERT INTO caracteristicas_quimicas (nombre, descripcion)
+VALUES ('Característica Química A', 'Descripción de la característica química A'),
+       ('Característica Química B', 'Descripción de la característica química B');
+
+INSERT INTO tipo_terreno (nombre, id_caracteristicas_quimicas, id_caracteristicas_fisicas, fertilidad, descripcion)
+VALUES ('Tipo Terreno A', 1, 1, 'Alta', 'Descripción del tipo de terreno A'),
+       ('Tipo Terreno B', 2, 2, 'Media', 'Descripción del tipo de terreno B');
+
+INSERT INTO terreno (id_tipo_terreno, id_cultivo, id_clima)
+VALUES (1, 1, 1),
+       (2, 2, 2);
+
+INSERT INTO simulacion (id_usuario, id_rover, id_terreno, fecha_creacion, tiempo_en_segundos, punto_inicio_x, punto_final_x, punto_inicio_y, punto_final_y, distancia)
+VALUES (1, 1, 1, '2023-05-27', 3600, 0.0, 10.0, 0.0, 5.0, 20.0),
+       (2, 2, 2, '2023-05-27', 7200, 5.0, 15.0, 2.0, 8.0, 15.0);
+
+COMMIT;
+
+
+DELIMITER //
+
+CREATE PROCEDURE obtener_simulacion(IN simulacion_id INT)
+BEGIN
+    DECLARE fecha_creacion_simulacion DATE;
+    DECLARE tiempo_en_segundos_simulacion FLOAT;
+    DECLARE punto_inicio_x_simulacion FLOAT;
+    DECLARE punto_final_x_simulacion FLOAT;
+    DECLARE punto_inicio_y_simulacion FLOAT;
+    DECLARE punto_final_y_simulacion FLOAT;
+    DECLARE distancia_simulacion FLOAT;
+    
+    SELECT fecha_creacion, tiempo_en_segundos, punto_inicio_x, punto_final_x, punto_inicio_y, punto_final_y, distancia
+    INTO fecha_creacion_simulacion, tiempo_en_segundos_simulacion, punto_inicio_x_simulacion, punto_final_x_simulacion, punto_inicio_y_simulacion, punto_final_y_simulacion, distancia_simulacion
+    FROM simulacion
+    WHERE id = simulacion_id;
+    
+    SELECT CONCAT('Información de la simulación ID ', simulacion_id) AS 'Simulación',
+           CONCAT('Fecha de creación: ', fecha_creacion_simulacion) AS 'Fecha de creación',
+           CONCAT('Tiempo en segundos: ', tiempo_en_segundos_simulacion) AS 'Tiempo en segundos',
+           CONCAT('Punto de inicio (X, Y): (', punto_inicio_x_simulacion, ', ', punto_inicio_y_simulacion, ')') AS 'Punto de inicio',
+           CONCAT('Punto final (X, Y): (', punto_final_x_simulacion, ', ', punto_final_y_simulacion, ')') AS 'Punto final',
+           CONCAT('Distancia recorrida: ', distancia_simulacion) AS 'Distancia recorrida';
+END //
+
+DELIMITER ;
+
+CALL obtener_simulacion(1);
