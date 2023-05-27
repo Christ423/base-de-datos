@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simulación de Rover</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Simulación de Rover</h1>
+
+    <?php
+    // Incluir el archivo de conexión
+    include 'conexion.php';
+
+    // Ejecutar el procedimiento almacenado
+    $query = "CALL obtener_simulacion(1)";
+    $result = mysqli_multi_query($conn, $query);
+
+    // Verificar si se ejecutó correctamente
+    if ($result) {
+        // Recuperar el primer conjunto de resultados
+        do {
+            if ($result = mysqli_store_result($conn)) {
+                // Verificar si hay resultados
+                if (mysqli_num_rows($result) > 0) {
+                    // Mostrar los resultados en una tabla HTML
+                    echo "<table>";
+                    echo "<tr><th>Simulación</th><th>Fecha de creación</th><th>Tiempo en segundos</th><th>Punto de inicio</th><th>Punto final</th><th>Distancia recorrida</th></tr>";
+
+                    while ($row = mysqli_fetch_assoc($result)) {
+                        echo "<tr>";
+                        echo "<td>" . $row["Simulación"] . "</td>";
+                        echo "<td>" . $row["Fecha de creación"] . "</td>";
+                        echo "<td>" . $row["Tiempo en segundos"] . "</td>";
+                        echo "<td>" . $row["Punto de inicio"] . "</td>";
+                        echo "<td>" . $row["Punto final"] . "</td>";
+                        echo "<td>" . $row["Distancia recorrida"] . "</td>";
+                        echo "</tr>";
+                    }
+
+                    echo "</table>";
+                } else {
+                    echo "<p class='error'>No se encontraron resultados.</p>";
+                }
+
+                // Liberar memoria del resultado
+                mysqli_free_result($result);
+            }
+        } while (mysqli_next_result($conn));
+    } else {
+        echo "<p class='error'>Error al ejecutar el procedimiento almacenado: " . mysqli_error($conn) . "</p>";
+    }
+
+    // Cerrar la conexión
+    mysqli_close($conn);
+    ?>
+</body>
+</html>
